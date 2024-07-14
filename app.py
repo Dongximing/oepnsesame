@@ -42,11 +42,6 @@ def get_valid_response(client, message, model_name, answer_string_list, temperat
         print(f"Invalid reply '{reply}', generating a new one...")
 
 
-def cosine_similarity(vec1, vec2):
-    """Calculate the cosine similarity between two vectors."""
-    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
-
-
 @app.route('/')
 def index():
     return render_template('main.html')
