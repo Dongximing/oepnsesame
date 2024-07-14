@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Text Similarity Checker</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            padding: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        select, button {
+            padding: 8px;
+            margin-top: 5px;
+        }
+        div#pairsContainer {
+            margin-bottom: 20px; /* 增加容器的底部外边距 */
+        }
+    </style>
+    <script>
+        function addSentencePair() {
+            const container = document.getElementById('pairsContainer');
+            const pairCount = container.children.length;
+
+            const newPairHTML = `
+                <div id="pair${pairCount}">
+                    <label for="sentence1-${pairCount}">Sentence 1:</label>
+                    <input type="text" id="sentence1-${pairCount}" name="sentence1-${pairCount}"><br>
+                    <label for="sentence2-${pairCount}">Sentence 2:</label>
+                    <input type="text" id="sentence2-${pairCount}" name="sentence2-${pairCount}"><br>
+                    <div id="result-${pairCount}"></div><br>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', newPairHTML);
+            document.getElementById('pairCount').value = pairCount + 1;
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = new FormData(form);
+            fetch('/compare', {
+                method: 'POST',
+                body: data
+            })
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(item => {
+                    const resultContainer = document.getElementById(`result-${item.pair_index}`);
+                    resultContainer.innerHTML = `Result: ${item.label}`;
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('comparisonForm').addEventListener('submit', handleSubmit);
+        });
+    </script>
+</head>
+<body>
+    <h1>OpenSesame Project Phase 2</h1>
+    <form id="comparisonForm" action="/compare" method="post">
+        <div id="pairsContainer">
+            <!-- Initial pair -->
+            <div id="pair0">
+                <label for="sentence1-0">Sentence 1:</label>
+                <input type="text" id="sentence1-0" name="sentence1-0"><br>
+                <label for="sentence2-0">Sentence 2:</label>
+                <input type="text" id="sentence2-0" name="sentence2-0"><br>
+                <div id="result-0"></div><br>
+            </div>
+        </div>
+        <input type="hidden" id="pairCount" name="pairCount" value="1">
+        <button type="button" onclick="addSentencePair()">Add Another Pair</button><br><br>
+        <label for="generateMethod">Generate Method:</label>
+        <select id="generateMethod" name="generateMethod">
+            <option value="gpt-prompt">gpt-prompt</option>
+            <option value="huggingface-model">huggingface-model</option>
+        </select><br><br>
+        <button type="submit">Compare</button>
+    </form>
+</body>
+</html>
